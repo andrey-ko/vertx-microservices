@@ -1,0 +1,27 @@
+apply plugin: "kotlin-kapt"
+
+kapt {
+  generateStubs = true
+  processors = "io.vertx.codegen.CodeGenProcessor"
+}
+
+afterEvaluate {
+  kaptGenerateStubsKotlin {
+    group "codegen"
+  }
+
+  kaptKotlin {
+    group "codegen"
+  }
+}
+
+dependencies {
+  kapt "io.vertx:vertx-codegen:$vertxVersion:processor"
+}
+// main dependencies
+dependencies {
+}
+
+dependencies {
+  compile "com.google.dagger:dagger:2.+"
+}

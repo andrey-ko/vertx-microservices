@@ -1,0 +1,6 @@
+rootProject.name = 'vertx-microservices'
+
+include 'api-gateway'
+include 'health-check-service'
+include 'gtfs-lookup-service'
+include 'organization-service'

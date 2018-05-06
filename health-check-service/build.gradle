@@ -1,0 +1,24 @@
+import org.jetbrains.kotlin.gradle.internal.*
+
+apply plugin: "kotlin-kapt"
+
+kapt {
+  generateStubs = true
+  processors = "io.vertx.codegen.CodeGenProcessor"
+}
+
+afterEvaluate {
+  tasks.withType(KaptTask)*.group("codegen")
+  tasks.withType(KaptGenerateStubsTask)*.group("codegen")
+}
+
+// kapt dependencies
+dependencies {
+  kapt "io.vertx:vertx-codegen:$vertxVersion:processor"
+}
+
+// main dependencies
+dependencies {
+  compile project(":gtfs-lookup-service")
+  compile project(":organization-service")
+}
