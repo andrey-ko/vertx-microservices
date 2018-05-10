@@ -1,0 +1,109 @@
+openapi: "3.0.0"
+info:
+  title: API gateway
+  version: 0.0.1
+
+paths:
+
+  '/gtfs/agencies':
+    get:
+      operationId: getAgencies
+      responses:
+        '200': {$ref: '#/components/responses/AgencyList'}
+        default: {$ref: '#/components/responses/Error'}
+
+  '/gtfs/agencies/id/{agency-id}':
+    parameters:
+      - name: agency-id
+        in: path
+        required: true
+        schema: {type: string}
+    get:
+      operationId: getAgencyById
+      responses:
+        '200': {$ref: '#/components/responses/Agency'}
+        default: {$ref: '#/components/responses/Error'}
+
+  '/gtfs/agencies/organization-id/{org-id}':
+    parameters:
+      - name: org-id
+        in: path
+        required: true
+        schema: {type: string}
+    get:
+      operationId: getAgenciesByOrgId
+      responses:
+        '200': {$ref: '#/components/responses/AgencyList'}
+        default: {$ref: '#/components/responses/Error'}
+
+  '/health-check':
+    get:
+      operationId: healthCheck
+      responses:
+        '200': {$ref: '#/components/responses/HealthStatusList'}
+        default: {$ref: '#/components/responses/Error'}
+
+
+components:
+
+  # models
+
+  schemas:
+
+    Error:
+      type: object
+      properties:
+        type: {type: string}
+        code: {type: integer}
+        message: {type: string}
+      required: [code, message]
+
+    Agency:
+      type: object
+      properties:
+        id: {type: string}
+        type: {type: string}
+        name: {type: string}
+      required: [id, type, name]
+
+    HealthStatus:
+      type: object
+      properties:
+        service: {type: string}
+        status: {type: string}
+
+  # responses
+
+  responses:
+
+    Error:
+      description: error
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Error'
+
+    HealthStatusList:
+      description: health status
+      content:
+        application/json:
+          schema:
+            type: array
+            items: {$ref: '#/components/schemas/HealthStatus'}
+
+
+    Agency:
+      description: agency
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/Agency'}
+
+    AgencyList:
+      description: list of agencies
+      content:
+        application/json:
+          schema:
+            type: array
+            items: {$ref: '#/components/schemas/Agency'}

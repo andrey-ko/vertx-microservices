@@ -35,6 +35,11 @@ idea {
   }
 }*/
 
+ext {
+  pckg = "$group.${fmtDotNotation(name)}"
+  pckgDir = pckg.replace('.', '/')
+}
+
 subprojects {
 
   apply plugin: "com.satori.transform"
@@ -56,8 +61,8 @@ subprojects {
   targetCompatibility = JavaVersion.VERSION_1_8
 
   ext {
-    moduleName = "$group.${fmtDotNotation(rootProject.name)}.${fmtDotNotation(project.name)}"
-    pckgDir = moduleName.replace('.', '/')
+    pckg = "${project.parent.pckg}.${fmtDotNotation(project.name)}"
+    pckgDir = pckg.replace('.', '/')
   }
 
   sourceSets.main.java.srcDirs = ['src']
@@ -158,7 +163,17 @@ subprojects {
     }
   }
 
-  //configurations.compile { transitive = true }
+  sourceSets.all { sourceSet ->
+    def n = sourceSet.name
+    n = n != "main" ? n.capitalize() : ""
+    def taskName = "generate${n}Code"
+    println "defining task: '${project.name}:${taskName}'"
+    def t = task "generate${n}Code"() {
+      group 'codegen'
+    }
+    tasks["compile${n}Java"].dependsOn t
+    tasks["compile${n}Kotlin"].dependsOn t
+  }
 
   repositories {
     jcenter()
@@ -172,10 +187,10 @@ subprojects {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
     compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion"
 
-    /*compile satoriLibsAsyncKotlin()
+    compile satoriLibsVertxKotlin()
+    compile satoriLibsAsyncKotlin()
     compile satoriLibsCommonKotlin()
-    compile satoriLibsVertxKotlin()*/
-
+    
     compile "io.vertx:vertx-core:$vertxVersion"
     compile "io.vertx:vertx-codegen:$vertxVersion"
     //compile "io.vertx:vertx-rx-java:$vertxVersion"
@@ -183,5 +198,7 @@ subprojects {
     compile "io.vertx:vertx-service-discovery:$vertxVersion"
     compile "io.vertx:vertx-hazelcast:$vertxVersion"
 
+    compile "com.google.dagger:dagger:$daggerVersion"
+    compile "com.google.errorprone:error_prone_core:$errorProneVersion"
   }
 }

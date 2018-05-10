@@ -1,0 +1,106 @@
+import org.jetbrains.kotlin.gradle.internal.*
+apply plugin: "kotlin-kapt"
+
+kapt {
+  generateStubs = true
+  correctErrorTypes = true
+}
+
+afterEvaluate {
+  tasks.withType(KaptTask)*.group("codegen")
+  tasks.withType(KaptGenerateStubsTask)*.group("codegen")
+}
+
+sourceSets {
+  codegen {
+    java.srcDirs = ['codegen/src']
+    resources.srcDirs = ['codegen/res']
+  }
+}
+
+task generateTemplates(type: DependencyExec) {
+  group 'codegen'
+  generateCodegenCode.dependsOn it
+
+  def out = file("codegen/gen")
+  def templates = fileTree("codegen/templates").include("*.mustache")
+
+  inputs.file(templates)
+  outputs.dir(out)
+
+  sourceSets.codegen.java.srcDir out
+  idea.module.generatedSourceDirs += out
+
+  dependency satoriCodegenMustacheBuilder()
+  main = "com.satori.codegen.mustache.builder.App"
+
+  args "--templates", templates.files.join(File.pathSeparator)
+  args "--pckg", pckg
+  args "--out", out
+
+  doFirst {
+    delete out
+    println "generating templates ...."
+    println commandLine.join(" ")
+  }
+
+  clean.doFirst {
+    delete out
+  }
+}
+
+task generateGtfsLookupModels(type: JavaExec) {
+  group 'codegen'
+  generateCode.dependsOn it
+
+  def out = file("gen")
+  def schema = file("spec.openapi.yaml")
+
+  inputs.file(schema)
+  outputs.dir(out)
+
+  sourceSets.main.java.srcDir out
+  sourceSets.main.kotlin.srcDir out
+
+  classpath sourceSets.codegen.runtimeClasspath
+  //classpath configurations.codegen.
+
+  main = "${pckg}.App"
+  args "--spec", schema
+  args "--pckg", pckg
+  args "--out", out
+  args "--api", "api-gateway"
+
+  doFirst {
+    delete out
+    println "generating code...."
+    println commandLine.join(" ")
+  }
+
+  clean.doFirst {
+    delete out
+  }
+
+  idea.module.generatedSourceDirs += out
+}
+
+// kapt dependencies
+dependencies {
+  kapt "io.vertx:vertx-codegen:$vertxVersion:processor"
+  kapt "com.google.dagger:dagger-compiler:$daggerVersion"
+}
+
+// main dependencies
+dependencies {
+  compile project(":gtfs-lookup-service")
+  compile project(":organization-service")
+  compile project(":health-check-service")
+}
+
+// codegen dependencies
+dependencies {
+  codegenCompile satoriLibsCommonKotlin()
+  codegenCompile satoriCodegenUtils()
+  codegenCompile "io.swagger:swagger-codegen:3.0.0-SNAPSHOT"
+  //codegenCompile "org.codehaus.groovy:groovy-all:$groovyVersion"
+}

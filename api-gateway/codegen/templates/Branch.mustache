@@ -1,0 +1,47 @@
+{{#variables*}}
+String {{this}} = tok.next();
+{{/variables*}}
+
+switch (tok.next()) {
+  {{#hasOperations?}}
+  case "":
+    switch (req.getMethod()) {
+      {{#methods*}}
+      case {{name}}: {
+        {{#qparams*}}
+        {{type}} {{varName}} = qparamAs{{type}}(req, "{{schemaName}}");
+        {{/qparams*}}
+        final IAsyncFuture<? extends Object> future = impl.{{operationId}}({{#args*}}{{this}}{{^last?}}, {{/last?}}{{/args*}});
+        AsyncFuture<RpcResult> res = new AsyncFuture<>();
+        future.onCompleted(ar->{
+          try {
+            if(!ar.isSucceeded()){
+              res.fail(ar.getError());
+              return;
+            }
+            Object value = ar.getValue();
+            JsonNode content = value != null ? mapper.valueToTree(value) : null;
+            MultiMap headers = new CaseInsensitiveHeaders();
+            headers.add("Content-Type", "{{contentType}}");
+            res.succeed(new RpcResult(
+              200, "OK", content, headers
+            ));
+          } catch (Throwable exn) {
+            res.fail(exn);
+          }
+        });
+        return res;
+      }
+      {{/methods*}}
+      default:
+      return AsyncResults.succeeded(RpcResults.notFound());
+    }
+  {{/hasOperations?}}
+  {{#children*}}
+  case "{{value}}": {
+    {{>Branch}}
+  }
+  {{/children*}}
+  default:
+    return AsyncResults.succeeded(RpcResults.notFound());
+}

@@ -1,0 +1,25 @@
+{{#isClass?}}
+@JsonInclude(JsonInclude.Include.NON_DEFAULT)
+@JsonIgnoreProperties(ignoreUnknown = true)
+public {{#isStatic?}}static {{/isStatic?}}class {{className}}{{#base}} extends {{this}}{{/base}}{
+  {{#properties*}}
+
+  @JsonProperty("{{schemaName}}")
+  public {{type}} {{varName}};
+  {{/properties*}}
+
+  {{#types*}}
+  {{>Type}}
+  {{/types*}}
+}
+{{/isClass?}}{{#isEnum?}}
+public enum {{className}} {
+  {{#options*}}
+
+  @JsonProperty("{{value}}")
+  {{name}}{{^last?}},{{/last?}}
+  {{/options*}}
+}
+{{/isEnum?}}
+
+

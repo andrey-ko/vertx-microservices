@@ -1,10 +1,9 @@
 import org.jetbrains.kotlin.gradle.internal.*
-
 apply plugin: "kotlin-kapt"
 
 kapt {
   generateStubs = true
-  processors = "io.vertx.codegen.CodeGenProcessor"
+  correctErrorTypes = true
 }
 
 afterEvaluate {
@@ -15,6 +14,7 @@ afterEvaluate {
 // kapt dependencies
 dependencies {
   kapt "io.vertx:vertx-codegen:$vertxVersion:processor"
+  kapt "com.google.dagger:dagger-compiler:$daggerVersion"
 }
 
 // main dependencies

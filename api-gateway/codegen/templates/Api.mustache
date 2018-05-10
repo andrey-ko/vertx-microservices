@@ -1,0 +1,19 @@
+// auto generated
+// don't modify
+package {{packageName}};
+
+import java.util.*;
+import java.time.*;
+import com.fasterxml.jackson.annotation.*;
+import com.satori.libs.async.api.*;
+
+{{#imports*}}
+import {{this}};
+{{/imports*}}
+
+public interface {{className}} {
+  {{#operations*}}
+
+  public IAsyncFuture<{{responseType}}> {{methodName}}({{#args*}}{{type}} {{name}}{{^last?}}, {{/last?}}{{/args*}});
+  {{/operations*}}
+}

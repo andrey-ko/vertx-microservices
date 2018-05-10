@@ -1,6 +1,5 @@
 package org.andreyko.vertx.microservices.organization.service
 
-import com.hazelcast.core.*
 import io.vertx.core.*
 import io.vertx.core.eventbus.*
 import io.vertx.core.json.*
@@ -14,7 +13,7 @@ class OrganizationVerticle() : AbstractVerticle() {
   
   override fun start(future: Future<Void>) {
     log.info("started (deploymentId = ${deploymentID()})")
-  
+    
     // create service binder
     val binder = ServiceBinder(vertx)
     this.binder = binder
@@ -24,7 +23,7 @@ class OrganizationVerticle() : AbstractVerticle() {
     
     // Register the handler
     val serviceHandler = binder
-      .setAddress("organization-service")
+      .setAddress(OrganizationModule.address)
       .register(IOrganizationService::class.java, service)
     
     this.serviceHandler = serviceHandler
@@ -36,7 +35,7 @@ class OrganizationVerticle() : AbstractVerticle() {
     if (binder != null) {
       this.binder = null
       val serviceHandler = serviceHandler
-      if(serviceHandler != null){
+      if (serviceHandler != null) {
         this.serviceHandler = null
         binder.unregister(serviceHandler)
       }

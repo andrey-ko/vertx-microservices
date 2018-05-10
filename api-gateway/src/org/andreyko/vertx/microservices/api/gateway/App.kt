@@ -1,11 +1,9 @@
-package org.andreyko.vertx.microservices.health.check.service
+package org.andreyko.vertx.microservices.api.gateway
 
 import com.hazelcast.config.*
 import io.vertx.core.*
 import io.vertx.spi.cluster.hazelcast.*
-import org.andreyko.vertx.microservices.gtfs.lookup.service.*
 import org.slf4j.*
-import javax.transaction.xa.*
 
 object App {
   val log = LoggerFactory.getLogger(javaClass)
@@ -13,8 +11,9 @@ object App {
   @JvmStatic
   fun main(vararg args: String) {
     val hzCfg = Config()
-    //hzCfg.setProperty("hazelcast.logging.type", "slf4j");
+    //hzCfg.setProperty("hazelcast.logging.type", "slf4j")
     System.setProperty("vertx.hazelcast.async-api", "true")
+    
     val clusterManager = HazelcastClusterManager(hzCfg)
     val vertxOptions = VertxOptions().apply {
       this.clusterManager = clusterManager
@@ -27,21 +26,13 @@ object App {
         return@clusteredVertx
       }
       val vertx = ar.result()
-      vertx.exceptionHandler {exn->
-        vertx.close{ar->
-          clusterManager.hazelcastInstance.shutdown()
-          System.runFinalization()
-          System.exit(-1) // TODO: fix it
-        }
-      }
       log.info("vertx successfully created")
       val deploymentOptions = DeploymentOptions().apply {
       }
       val component = DaggerAppComponent.builder()
-        .gtfsLookupModule(GtfsLookupModule())
         .appModule(AppModule(vertx, clusterManager.hazelcastInstance))
         .build()
-      vertx.deployVerticle(component.newHealthCheckVerticle()) { deploymentResult ->
+      vertx.deployVerticle(component.newServerVerticle()) { deploymentResult ->
         if (!deploymentResult.succeeded()) {
           //log.error("failed to deploy verticle", deploymentResult.cause())
         }

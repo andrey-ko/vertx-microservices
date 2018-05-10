@@ -1,0 +1,83 @@
+// auto generated
+// don't modify
+package {{packageName}};
+
+import java.util.*;
+import java.time.*;
+
+import com.fasterxml.jackson.databind.*;
+import io.vertx.core.*;
+import io.vertx.core.http.*;
+
+import com.satori.libs.async.api.*;
+import com.satori.libs.async.core.*;
+
+
+{{#imports*}}
+import {{this}};
+{{/imports*}}
+
+public class {{className}} {
+
+  public final ObjectMapper mapper = new ObjectMapper();
+  public final {{apiInterface}} impl;
+
+  public {{className}} ({{apiInterface}} impl){
+    this.impl = impl;
+  }
+
+  public IAsyncFuture<RpcResult> process(RpcRequest req) {
+    Tok tok = tokenizePath(req);
+    {{>Branch}}
+  }
+
+  private static Tok tokenizePath(RpcRequest req) {
+    StringTokenizer tok = new StringTokenizer(req.getPath(), "/", false);
+    return () -> {
+      if (!tok.hasMoreTokens()) {
+        return "";
+      }
+      return tok.nextToken();
+    };
+  }
+
+  private String qparamAsString(RpcRequest req, String name){
+    MultiMap params = req.getParams();
+    if(params == null) return null;
+    return params.get(name);
+  }
+
+  private OffsetDateTime qparamAsOffsetDateTime(RpcRequest req, String name) {
+    String raw = qparamAsString(req, name);
+    if (raw == null) return null;
+    return OffsetDateTime.parse(raw);
+  }
+
+  private Integer qparamAsInteger(RpcRequest req, String name) {
+    String raw = qparamAsString(req, name);
+    if (raw == null) return null;
+    return Integer.parseInt(raw);
+  }
+
+  private Long qparamAsLong(RpcRequest req, String name) {
+    String raw = qparamAsString(req, name);
+    if (raw == null) return null;
+    return Long.parseLong(raw);
+  }
+
+  private Float qparamAsFloat(RpcRequest req, String name) {
+    String raw = qparamAsString(req, name);
+    if (raw == null) return null;
+    return Float.parseFloat(raw);
+  }
+
+  private Double qparamAsDouble(RpcRequest req, String name) {
+    String raw = qparamAsString(req, name);
+    if (raw == null) return null;
+    return Double.parseDouble(raw);
+  }
+
+  private interface Tok {
+    String next();
+  }
+}
